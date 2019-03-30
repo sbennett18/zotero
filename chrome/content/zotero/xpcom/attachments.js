@@ -277,6 +277,13 @@ Zotero.Attachments = new function(){
 	
 	/**
 	 * @param {Object} options - 'file', 'url', 'title', 'contentType', 'charset', 'parentItemID', 'singleFile'
+	 * @param {String} options.file
+	 * @param {String} options.url
+	 * @param {String} options.title
+	 * @param {String} options.contentType
+	 * @param {String} options.charset
+	 * @param {Integer[]|String[]} [options.parentItemID] - Parent item to add item to
+	 * @param {Boolean} options.singleFile
 	 * @return {Promise<Zotero.Item>}
 	 */
 	this.importSnapshotFromFile = Zotero.Promise.coroutine(function* (options) {
@@ -542,7 +549,7 @@ Zotero.Attachments = new function(){
 	 *
 	 * @param {Object} options
 	 * @param {String} options.directory
-	 * @param {Number} options.libraryID
+	 * @param {Integer} options.libraryID
 	 * @param {String} options.filename
 	 * @param {String} options.url
 	 * @param {Number} [options.parentItemID]
@@ -617,7 +624,12 @@ Zotero.Attachments = new function(){
 	/**
 	 * Create a link attachment from a URL
 	 *
-	 * @param {Object} options - 'url', 'parentItemID', 'contentType', 'title', 'collections'
+	 * @param {Object} options
+	 * @param {String} options.url
+	 * @param {Number} options.parentItemID
+	 * @param {String} options.contentType
+	 * @param {String} options.title
+	 * @param {String[]} options.collections
 	 * @return {Promise<Zotero.Item>} - A promise for the created attachment item
 	 */
 	this.linkFromURL = Zotero.Promise.coroutine(function* (options) {
@@ -1859,9 +1871,9 @@ Zotero.Attachments = new function(){
 		Zotero.debug("Zotero.Attachments.cleanAttachmentURI() is deprecated -- use Zotero.Utilities.cleanURL");
 		return Zotero.Utilities.cleanURL(uri, tryHttp);
 	}
-	
-	
-	/*
+
+
+	/**
 	 * Returns a formatted string to use as the basename of an attachment
 	 * based on the metadata of the specified item and a format string
 	 *
@@ -2536,6 +2548,7 @@ Zotero.Attachments = new function(){
 	 * @param {Object} options
 	 * @param {nsIFile|String} [file]
 	 * @param {String} [url]
+	 * @param {Integer} [libraryID]
 	 * @param {String} title
 	 * @param {Number} linkMode
 	 * @param {String} contentType
