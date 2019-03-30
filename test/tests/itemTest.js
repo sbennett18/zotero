@@ -870,8 +870,9 @@ describe("Zotero.Item", function () {
 			var dir = getTestDataDirectory().path;
 			var dirname = OS.Path.basename(dir);
 			var baseDir = OS.Path.dirname(dir);
-			Zotero.Prefs.set('saveRelativeAttachmentPath', true)
-			Zotero.Prefs.set('baseAttachmentPath', baseDir)
+
+			Zotero.Attachments.setBasePathByLibrary(Zotero.Libraries.userLibraryID, baseDir);
+			Zotero.Attachments.setSaveRelativePathByLibrary(Zotero.Libraries.userLibraryID, true);
 			
 			var file = OS.Path.join(dir, 'test.png');
 			
@@ -881,16 +882,16 @@ describe("Zotero.Item", function () {
 			
 			assert.equal(item.attachmentPath, "attachments:data/test.png");
 			
-			Zotero.Prefs.set('saveRelativeAttachmentPath', false)
-			Zotero.Prefs.clear('baseAttachmentPath')
+			Zotero.Attachments.setSaveRelativePathByLibrary(Zotero.Libraries.userLibraryID, false);
+			Zotero.Attachments.setBasePathByLibrary(Zotero.Libraries.userLibraryID, null);
 		})
 		
 		it("should return a prefixed path for a linked attachment within the defined base directory", function* () {
 			var dir = getTestDataDirectory().path;
 			var dirname = OS.Path.basename(dir);
 			var baseDir = OS.Path.dirname(dir);
-			Zotero.Prefs.set('saveRelativeAttachmentPath', true)
-			Zotero.Prefs.set('baseAttachmentPath', baseDir)
+			Zotero.Attachments.setSaveRelativePathByLibrary(Zotero.Libraries.userLibraryID, true);
+			Zotero.Attachments.setBasePathByLibrary(Zotero.Libraries.userLibraryID, baseDir);
 			
 			var file = OS.Path.join(dir, 'test.png');
 			
@@ -900,8 +901,8 @@ describe("Zotero.Item", function () {
 			
 			assert.equal(item.attachmentPath, "attachments:data/test.png");
 			
-			Zotero.Prefs.set('saveRelativeAttachmentPath', false)
-			Zotero.Prefs.clear('baseAttachmentPath')
+			Zotero.Attachments.setSaveRelativePathByLibrary(Zotero.Libraries.userLibraryID, false);
+			Zotero.Attachments.setBasePathByLibrary(Zotero.Libraries.userLibraryID, null);
 		})
 	})
 	
