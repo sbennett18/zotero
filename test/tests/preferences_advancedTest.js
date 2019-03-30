@@ -107,31 +107,31 @@ describe("Advanced Preferences", function () {
 				}
 				
 				var promise = waitForDialog();
-				yield win.Zotero_Preferences.Attachment_Base_Directory.clearPath();
+				yield win.Zotero_Preferences.Attachment_Base_Directory.clearPath(Zotero.Libraries.userLibraryID);
 				yield promise;
 				
 				win.close();
 			});
 			
 			beforeEach(function () {
-				Zotero.Prefs.clear('baseAttachmentPath');
-				Zotero.Prefs.clear('saveRelativeAttachmentPath');
+				Zotero.Prefs.clear('libraryAttachmentBasePaths');
+				Zotero.Prefs.clear('librarySaveRelativeAttachmentPaths');
 			});
 			
 			it("should set new base directory", function* () {
 				var basePath = getTestDataDirectory().path;
 				yield setBaseDirectory(basePath);
-				assert.equal(Zotero.Prefs.get('baseAttachmentPath'), basePath);
-				assert.isTrue(Zotero.Prefs.get('saveRelativeAttachmentPath'));
+				assert.equal(Zotero.Attachments.getBasePathByLibrary(Zotero.Libraries.userLibraryID), basePath);
+				assert.isTrue(Zotero.Attachments.getSaveRelativePathByLibrary(Zotero.Libraries.userLibraryID));
 			})
 			
 			it("should clear base directory", function* () {
 				var basePath = getTestDataDirectory().path;
 				yield setBaseDirectory(basePath);
 				yield clearBaseDirectory();
-				
-				assert.equal(Zotero.Prefs.get('baseAttachmentPath'), '');
-				assert.isFalse(Zotero.Prefs.get('saveRelativeAttachmentPath'));
+
+				assert.equal(Zotero.Attachments.getBasePathByLibrary(Zotero.Libraries.userLibraryID), '');
+				assert.isFalse(Zotero.Attachments.getSaveRelativePathByLibrary(Zotero.Libraries.userLibraryID));
 			})
 			
 			it("should change absolute path of linked attachment under new base dir to prefixed path", function* () {
@@ -180,10 +180,10 @@ describe("Advanced Preferences", function () {
 				);
 				
 				yield clearBaseDirectory();
-				
-				assert.equal(Zotero.Prefs.get('baseAttachmentPath'), '');
-				assert.isFalse(Zotero.Prefs.get('saveRelativeAttachmentPath'));
-				
+
+				assert.equal(Zotero.Attachments.getBasePathByLibrary(Zotero.Libraries.userLibraryID), '');
+				assert.isFalse(Zotero.Attachments.getSaveRelativePathByLibrary(Zotero.Libraries.userLibraryID));
+
 				assert.equal(attachment.attachmentPath, file.path);
 			})
 		})

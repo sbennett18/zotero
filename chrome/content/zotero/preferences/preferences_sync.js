@@ -213,11 +213,22 @@ Zotero_Preferences.Sync = {
 
 		this.displayFields();
 		Zotero.Prefs.clear('sync.librariesToSync');
+		var userLibraryID = Zotero.Libraries.userLibraryID;
+		if (Zotero.Attachments.getSaveRelativePathByLibrary(userLibraryID)) {
+			Zotero.Prefs.clear('librarySaveRelativeAttachmentPaths');
+			Zotero.Attachments.setSaveRelativePathByLibrary(userLibraryID, true);
+			let userLibraryPrefValue = Zotero.Attachments.getBasePathByLibrary(userLibraryID);
+			Zotero.Prefs.clear('libraryAttachmentBasePaths');
+			Zotero.Attachments.setBasePathByLibrary(userLibraryID, userLibraryPrefValue);
+		} else {
+			Zotero.Prefs.clear('libraryAttachmentBasePaths');
+			Zotero.Prefs.clear('librarySaveRelativeAttachmentPaths');
+		}
 		yield Zotero.Sync.Runner.deleteAPIKey();
 	}),
 	
 	
-	showLibrariesToSyncDialog: function() {
+	showLibrariesToSyncDialog: function () {
 		var io = {};
 		window.openDialog('chrome://zotero/content/preferences/librariesToSync.xul',
 			"zotero-preferences-librariesToSyncDialog", "chrome,modal,centerscreen", io);
@@ -260,7 +271,7 @@ Zotero_Preferences.Sync = {
 		var row = treechildren.childNodes[index];
 		var val = row.firstChild.childNodes[1].getAttribute('value');
 		if (!val) {
-			return
+			return;
 		}
 		
 		var librariesToSkip = JSON.parse(Zotero.Prefs.get('sync.librariesToSkip') || '[]');
