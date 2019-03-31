@@ -715,6 +715,22 @@ Zotero_Preferences.Attachment_Base_Directory = {
 			treeitem.appendChild(treerow);
 			treechildren.appendChild(treeitem);
 		});
+
+		// Prune preferences of any libraries that no longer exist
+		var existentLibraryIDs = libraries.map(l => parseInt(l.libraryID));
+		var savedLibraryIDs =
+				Object.keys(
+					JSON.parse(
+						Zotero.Prefs.get("librarySaveRelativeAttachmentPaths") || "{}"
+					)
+				).map(id => parseInt(id));
+		savedLibraryIDs.forEach(function (libraryID) {
+			if (existentLibraryIDs.indexOf(libraryID) == -1) {
+				Zotero.debug(`Pruning attachment base path preferences for non-existent library '${libraryID}'`);
+				Zotero.Attachments.setSaveRelativePathByLibrary(libraryID, null);
+				Zotero.Attachments.setBasePathByLibrary(libraryID, null);
+			}
+		});
 	}),
 	
 	

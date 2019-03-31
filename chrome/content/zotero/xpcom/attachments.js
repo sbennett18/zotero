@@ -2155,7 +2155,6 @@ Zotero.Attachments = new function(){
 	};
 
 
-	// TODO What if a library/group is removed?  Should we prune the preference?
 	/**
 	 * Set or clear the base attachment path for ``libraryID``
 	 *
@@ -2172,6 +2171,9 @@ Zotero.Attachments = new function(){
 		else {
 			prefValue[libraryID] = newBase;
 		}
+
+		// Clear old preference
+		Zotero.Prefs.clear("baseAttachmentPath");
 		Zotero.Prefs.set("libraryAttachmentBasePaths", JSON.stringify(prefValue));
 		return true;
 	};
@@ -2196,7 +2198,6 @@ Zotero.Attachments = new function(){
 	};
 
 
-	// TODO What if a library/group is removed?  Should we prune the preference?
 	/**
 	 * Set whether attachments within ``libraryID``'s base attachment directory
 	 * should be saved as relative paths.  ``libraryID`` can be cleared by passing
@@ -2215,6 +2216,9 @@ Zotero.Attachments = new function(){
 		else {
 			prefValue[libraryID] = saveRelative;
 		}
+
+		// Clear old preference
+		Zotero.Prefs.clear("saveRelativeAttachmentPath");
 		Zotero.Prefs.set("librarySaveRelativeAttachmentPaths", JSON.stringify(prefValue));
 		return true;
 	};
@@ -2591,8 +2595,6 @@ Zotero.Attachments = new function(){
 					attachmentItem.libraryID = parentLibraryID;
 				}
 				else {
-					// TODO This is essentially a workaround for all the tests that assume
-					// 		there is only a single base attachment path for the User library
 					Zotero.debug(`parentItemID '${parentItemID}' does not have a libraryID`);
 				}
 			}
