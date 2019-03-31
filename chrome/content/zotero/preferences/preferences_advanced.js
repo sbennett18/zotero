@@ -684,7 +684,14 @@ Zotero_Preferences.Attachment_Base_Directory = {
 			treechildren.removeChild(treechildren.firstChild);
 		}
 
-		function addRow(libraryName, libraryID, attachmentBasePath, checked=false) {
+		// Add library rows
+		var libraries = Zotero.Libraries.getAll();
+		libraries.forEach(function (library) {
+			var libraryName = library.name;
+			var libraryID = parseInt(library.libraryID);
+			var checked = Zotero.Attachments.getSaveRelativePathByLibrary(libraryID);
+			var attachmentBasePath = Zotero.Attachments.getBasePathByLibrary(libraryID);
+
 			var treeitem = document.createElement('treeitem');
 			var treerow = document.createElement('treerow');
 			var checkboxCell = document.createElement('treecell');
@@ -707,61 +714,7 @@ Zotero_Preferences.Attachment_Base_Directory = {
 			treerow.appendChild(pathCell);
 			treeitem.appendChild(treerow);
 			treechildren.appendChild(treeitem);
-		}
-
-		// Add loading row while we're loading a group list
-		var loadingLabel = Zotero.getString("zotero.preferences.sync.librariesToSync.loadingLibraries");
-		addRow(loadingLabel, "loading");
-
-		// var groups = Zotero.Groups.getAll();
-		var apiKey = yield Zotero.Sync.Data.Local.getAPIKey();
-		var client = Zotero.Sync.Runner.getAPIClient({apiKey});
-		var groups = [];
-		try {
-			// Load up remote groups
-			var keyInfo = yield Zotero.Sync.Runner.checkAccess(client, {timeout: 5000});
-			groups = yield client.getGroups(keyInfo.userID);
-		}
-		catch (e) {
-			// Connection problems
-			if ((e instanceof Zotero.HTTP.UnexpectedStatusException)
-					|| (e instanceof Zotero.HTTP.TimeoutException)
-					|| (e instanceof Zotero.HTTP.BrowserOfflineException)) {
-				Zotero.alert(
-					window,
-					Zotero.getString('general.error'),
-					Zotero.getString('sync.error.checkConnection', Zotero.clientName)
-				);
-			}
-			else {
-				throw e;
-			}
-			document.getElementsByTagName('dialog')[0].acceptDialog();
-		}
-
-		// Remove the loading row
-		treechildren.removeChild(treechildren.firstChild);
-
-		// Add default rows
-		addRow(
-			Zotero.getString("pane.collections.libraryAndFeeds"),
-			Zotero.Libraries.userLibraryID,
-			Zotero.Attachments.getBasePathByLibrary(Zotero.Libraries.userLibraryID),
-			Zotero.Attachments.getSaveRelativePathByLibrary(Zotero.Libraries.userLibraryID)
-		);
-
-		// Sort groups
-		var collation = Zotero.getLocaleCollation();
-		groups.sort((a, b) => collation.compareString(1, a.data.name, b.data.name));
-		// Add group rows
-		for (let group of groups) {
-			addRow(
-				group.data.name,
-				group.id,
-				Zotero.Attachments.getBasePathByLibrary(group.id),
-				Zotero.Attachments.getSaveRelativePathByLibrary(group.id)
-			);
-		}
+		});
 	}),
 	
 	
