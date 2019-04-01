@@ -732,30 +732,22 @@ Zotero_Preferences.Attachment_Base_Directory = {
 			}
 		});
 	}),
-	
+
 	
 	changePath: Zotero.Promise.coroutine(function* (libraryID, basePath) {
-		Zotero.debug(`New base directory is ${basePath}`);
-		
-		// Find all current attachments with relative attachment paths
-		var sql = "SELECT itemID FROM itemAttachments WHERE linkMode=? AND path LIKE ?";
-		var params = [
-			Zotero.Attachments.LINK_MODE_LINKED_FILE,
-			Zotero.Attachments.BASE_PATH_PLACEHOLDER + "%"
-		];
-		var oldRelativeAttachmentIDs = yield Zotero.DB.columnQueryAsync(sql, params);
+		Zotero.debug(`Setting new base attachment directory for '${libraryID}': '${basePath}'`);
 		
 		// Find all attachments on the new base path
 		var sql = "SELECT itemID FROM itemAttachments WHERE linkMode=?";
 		var params = [Zotero.Attachments.LINK_MODE_LINKED_FILE];
-		var allAttachments = yield Zotero.DB.columnQueryAsync(sql, params);
+		var allAttachmentIDs = yield Zotero.DB.columnQueryAsync(sql, params);
+		var isLibraryBasePathSet = Zotero.Attachments.getBasePathByLibrary(libraryID);
 		var newAttachmentPaths = {};
 		var numNewAttachments = 0;
 		var numOldAttachments = 0;
-		for (let i=0; i<allAttachments.length; i++) {
-			let attachmentID = allAttachments[i];
+		for (let i=0; i<allAttachmentIDs.length; i++) {
+			let attachmentID = allAttachmentIDs[i];
 			let attachmentPath;
-			let attachmentLibraryID;
 			let relPath = false
 			
 			try {
@@ -763,15 +755,13 @@ Zotero_Preferences.Attachment_Base_Directory = {
 				// This will return FALSE for relative paths if base directory
 				// isn't currently set
 				attachmentPath = attachment.getFilePath();
-				// Make sure we only change paths as appropriate for libraryID
-				attachmentLibraryID = attachment.libraryID;
+				// Make sure we only change paths for the specified library
+				if (attachment.libraryID !== libraryID) {
+					continue;
+				}
 				// Get existing relative path
 				let storedPath = attachment.attachmentPath;
 				if (storedPath.startsWith(Zotero.Attachments.BASE_PATH_PLACEHOLDER)) {
-					// Only if the attachment is in the current library
-					if (attachmentLibraryID !== libraryID) {
-						continue;
-					}
 					relPath = storedPath.substr(Zotero.Attachments.BASE_PATH_PLACEHOLDER.length);
 				}
 			}
@@ -790,70 +780,77 @@ Zotero_Preferences.Attachment_Base_Directory = {
 				}
 			}
 			
-			// Only files in libraryID should be updated to use relative paths
-			if (attachmentLibraryID === libraryID) {
-				// Files within the new base directory need to be updated to use
-				// relative paths (or, if the new base directory is an ancestor or
-				// descendant of the old one, new relative paths)
-				if (attachmentPath && Zotero.File.directoryContains(basePath, attachmentPath)) {
-					Zotero.debug(`Converting '${attachmentPath}' to relative path`);
-					newAttachmentPaths[attachmentID] = relPath ? attachmentPath : null;
-					numNewAttachments++;
-				}
-				// Existing relative attachments not within the new base directory
-				// will be converted to absolute paths
-				else if (relPath && Zotero.Attachments.getBasePathByLibrary(attachmentLibraryID)) {
-					Zotero.debug(`Converting '${relPath}' to absolute path`);
-					newAttachmentPaths[attachmentID] = attachmentPath;
-					numOldAttachments++;
-				}
-				else {
-					Zotero.debug(`'${attachmentPath}' is not within the base directory for library '${libraryID}': '${basePath}'`);
-				}
-			} else {
-				Zotero.debug(`'${attachmentPath}' is not in library '${libraryID}'`)
+			// Files within the new base directory need to be updated to use
+			// relative paths (or, if the new base directory is an ancestor or
+			// descendant of the old one, new relative paths)
+			if (attachmentPath && Zotero.File.directoryContains(basePath, attachmentPath)) {
+				Zotero.debug(`Will convert '${attachmentPath}' to relative path`);
+				newAttachmentPaths[attachmentID] = relPath ? attachmentPath : null;
+				numNewAttachments++;
+			}
+			// Existing relative attachments not within the new base directory
+			// will be converted to absolute paths
+			else if (relPath && isLibraryBasePathSet) {
+				Zotero.debug(`Will convert '${relPath}' to absolute path`);
+				newAttachmentPaths[attachmentID] = attachmentPath;
+				numOldAttachments++;
+			}
+			else {
+				Zotero.debug(`'${attachmentPath}' is not within the base directory for library '${libraryID}': '${basePath}'`);
 			}
 		}
 		
 		// Confirm change of the base path
-		var ps = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
-			.getService(Components.interfaces.nsIPromptService);
-		
 		var chooseStrPrefix = 'attachmentBasePath.chooseNewPath.';
 		var clearStrPrefix = 'attachmentBasePath.clearBasePath.';
 		var title = Zotero.getString(chooseStrPrefix + 'title');
-		var msg1 = Zotero.getString(chooseStrPrefix + 'message') + "\n\n", msg2 = "", msg3 = "";
+		var messages = [];
 		switch (numNewAttachments) {
 			case 0:
 				break;
-			
+
 			case 1:
-				msg2 += Zotero.getString(chooseStrPrefix + 'existingAttachments.singular') + " ";
+				messages.push(
+					Zotero.getString(chooseStrPrefix + 'existingAttachments.singular')
+				);
 				break;
-			
+
 			default:
-				msg2 += Zotero.getString(chooseStrPrefix + 'existingAttachments.plural', numNewAttachments) + " ";
+				messages.push(
+					Zotero.getString(
+						chooseStrPrefix + 'existingAttachments.plural',
+						numNewAttachments
+					)
+				);
 		}
 		
 		switch (numOldAttachments) {
 			case 0:
 				break;
-			
+
 			case 1:
-				msg3 += Zotero.getString(clearStrPrefix + 'existingAttachments.singular');
+				messages.push(
+					Zotero.getString(clearStrPrefix + 'existingAttachments.singular')
+				);
 				break;
-			
+
 			default:
-				msg3 += Zotero.getString(clearStrPrefix + 'existingAttachments.plural', numOldAttachments);
+				messages.push(
+					Zotero.getString(
+						clearStrPrefix + 'existingAttachments.plural',
+						numOldAttachments
+					)
+				)
 		}
 		
-		
+		var ps = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+			.getService(Components.interfaces.nsIPromptService);
 		var buttonFlags = (ps.BUTTON_POS_0) * (ps.BUTTON_TITLE_IS_STRING)
 			+ (ps.BUTTON_POS_1) * (ps.BUTTON_TITLE_CANCEL);
 		var index = ps.confirmEx(
 			null,
 			title,
-			(msg1 + msg2 + msg3).trim(),
+			Zotero.getString(chooseStrPrefix + 'message') + "\n\n" + messages.join(" "),
 			buttonFlags,
 			Zotero.getString(chooseStrPrefix + 'button'),
 			null,
@@ -879,12 +876,8 @@ Zotero_Preferences.Attachment_Base_Directory = {
 				return Zotero.DB.executeTransaction(function* () {
 					for (let id of chunk) {
 						let attachment = Zotero.Items.get(id);
-						if (newAttachmentPaths[id]) {
-							attachment.attachmentPath = newAttachmentPaths[id];
-						}
-						else {
-							attachment.attachmentPath = attachment.getFilePath();
-						}
+						attachment.attachmentPath =
+							newAttachmentPaths[id] || attachment.getFilePath();
 						yield attachment.save({
 							skipDateModifiedUpdate: true
 						});
@@ -912,18 +905,24 @@ Zotero_Preferences.Attachment_Base_Directory = {
 		
 		var strPrefix = 'attachmentBasePath.clearBasePath.';
 		var title = Zotero.getString(strPrefix + 'title');
-		var msg = Zotero.getString(strPrefix + 'message');
+		var messages = [Zotero.getString(strPrefix + 'message')];
 		switch (relativeAttachmentIDs.length) {
 			case 0:
 				break;
 			
 			case 1:
-				msg += "\n\n" + Zotero.getString(strPrefix + 'existingAttachments.singular');
+				messages.push(
+					Zotero.getString(strPrefix + 'existingAttachments.singular')
+				);
 				break;
 			
 			default:
-				msg += "\n\n" + Zotero.getString(strPrefix + 'existingAttachments.plural',
-					relativeAttachmentIDs.length);
+				messages.push(
+					Zotero.getString(
+						strPrefix + 'existingAttachments.plural',
+						relativeAttachmentIDs.length
+					)
+				);
 		}
 		
 		var buttonFlags = (ps.BUTTON_POS_0) * (ps.BUTTON_TITLE_IS_STRING)
@@ -931,7 +930,7 @@ Zotero_Preferences.Attachment_Base_Directory = {
 		var index = ps.confirmEx(
 			window,
 			title,
-			msg,
+			messages.join("\n\n"),
 			buttonFlags,
 			Zotero.getString(strPrefix + 'button'),
 			null,
