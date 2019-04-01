@@ -685,7 +685,9 @@ Zotero_Preferences.Attachment_Base_Directory = {
 		}
 
 		// Add library rows
-		var libraries = Zotero.Libraries.getAll();
+		var libraries = Zotero.Libraries.getAll()
+			.filter(l => l.libraryType === "user" || l.libraryType === "group");
+
 		libraries.forEach(function (library) {
 			var libraryName = library.name;
 			var libraryID = parseInt(library.libraryID);
@@ -719,11 +721,12 @@ Zotero_Preferences.Attachment_Base_Directory = {
 		// Prune preferences of any libraries that no longer exist
 		var existentLibraryIDs = libraries.map(l => parseInt(l.libraryID));
 		var savedLibraryIDs =
-				Object.keys(
-					JSON.parse(
-						Zotero.Prefs.get("librarySaveRelativeAttachmentPaths") || "{}"
-					)
-				).map(id => parseInt(id));
+			Object.keys(
+				JSON.parse(
+					Zotero.Prefs.get("librarySaveRelativeAttachmentPaths") || "{}"
+				)
+			).map(id => parseInt(id));
+
 		savedLibraryIDs.forEach(function (libraryID) {
 			if (existentLibraryIDs.indexOf(libraryID) == -1) {
 				Zotero.debug(`Pruning attachment base path preferences for non-existent library '${libraryID}'`);

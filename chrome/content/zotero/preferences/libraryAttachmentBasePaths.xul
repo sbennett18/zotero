@@ -47,13 +47,13 @@
 	<groupbox>
 		<caption label="Library Attachment Base Directories"/>
 
-		<tree id="library-attachment-base-paths-tree" flex="1" width="415" hidecolumnpicker="true" rows="10" seltype="single" editable="true"
+		<tree id="library-attachment-base-paths-tree" flex="1" width="515" hidecolumnpicker="true" rows="10" seltype="single" editable="true"
 			ondblclick="Zotero_Preferences.Attachment_Base_Directory.dblClickLibraryAttachmentBasePath(event);"
             onclick="Zotero_Preferences.Attachment_Base_Directory.clickLibraryAttachmentBasePath(event);">
             <treecols>
                 <treecol editable="true" type="checkbox" id="library-attachment-base-paths-checked" label="Enable"/>
-                <treecol editable="false" id="library-attachment-base-paths-name" label="&zotero.preferences.sync.librariesToSync.library;"/>
-                <treecol editable="false" id="library-attachment-base-paths-path" flex="1" label="Base Directory"/>
+                <treecol editable="false" id="library-attachment-base-paths-name" flex="1" label="&zotero.preferences.sync.librariesToSync.library;"/>
+                <treecol editable="false" id="library-attachment-base-paths-path" flex="5" label="Base Directory"/>
             </treecols>
 			<treechildren id="library-attachment-base-paths-rows"/>
 		</tree>
