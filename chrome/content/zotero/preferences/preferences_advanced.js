@@ -853,7 +853,9 @@ Zotero_Preferences.Attachment_Base_Directory = {
 		var index = ps.confirmEx(
 			null,
 			title,
-			Zotero.getString(chooseStrPrefix + 'message') + "\n\n" + messages.join(" "),
+			messages.length ?
+				Zotero.getString(chooseStrPrefix + 'message') + "\n\n" + messages.join(" ") :
+				Zotero.getString(chooseStrPrefix + 'message'),
 			buttonFlags,
 			Zotero.getString(chooseStrPrefix + 'button'),
 			null,
