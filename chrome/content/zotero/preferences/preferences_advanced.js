@@ -550,7 +550,7 @@ Zotero_Preferences.Attachment_Base_Directory = {
 	},
 
 
-	dblClickLibraryAttachmentBasePath: function (event) {
+	dblClickLibraryAttachmentBasePath: Zotero.Promise.coroutine(function* (event) {
 		var tree = document.getElementById("library-attachment-base-paths-tree");
 		var row = {}, col = {}, child = {};
 		tree.treeBoxObject.getCellAt(event.clientX, event.clientY, row, col, child);
@@ -578,19 +578,17 @@ Zotero_Preferences.Attachment_Base_Directory = {
 		var pathCell = treeRow.firstChild.childNodes[2];
 		var oldPath = pathCell.getAttribute("value");
 
-		var newPath = this.getNewPath(oldPath)
+		var newPath = this.getNewPath(oldPath);
 		if (!newPath) {
 			return;
 		}
 
-		this.changePath(libraryID, newPath).then(function (changed) {
-			if (changed) {
-				checkboxCell.setAttribute("value", true);
-				pathCell.setAttribute("label", newPath);
-				pathCell.setAttribute("value", newPath);
-			}
-		});
-	},
+		if (yield this.changePath(libraryID, newPath)) {
+			checkboxCell.setAttribute("value", true);
+			pathCell.setAttribute("label", newPath);
+			pathCell.setAttribute("value", newPath);
+		}
+	}),
 
 
 	clickLibraryAttachmentBasePath: function (event) {
@@ -607,7 +605,7 @@ Zotero_Preferences.Attachment_Base_Directory = {
 	},
 
 
-	toggleLibraryAttachmentBasePath: function (index) {
+	toggleLibraryAttachmentBasePath: Zotero.Promise.coroutine(function* (index) {
 		var treechildren = document.getElementById("library-attachment-base-paths-rows");
 		if (index >= treechildren.childNodes.length) {
 			return;
@@ -623,31 +621,28 @@ Zotero_Preferences.Attachment_Base_Directory = {
 		var checked = checkboxCell.getAttribute("value") === "true";
 		var pathCell = row.firstChild.childNodes[2];
 		var oldPath = pathCell.getAttribute("value");
-		Zotero.debug(`checked=${typeof checked}=${checked}`);
 
 		if (checked) {
-			var newPath = this.getNewPath(oldPath)
+			var newPath = this.getNewPath(oldPath);
 			if (!newPath) {
 				checkboxCell.setAttribute("value", false);
 				return;
 			}
-			this.changePath(libraryID, newPath).then(function (changed) {
-				checkboxCell.setAttribute("value", changed);
-				if (changed) {
-					pathCell.setAttribute("label", newPath);
-					pathCell.setAttribute("value", newPath);
-				}
-			});
+			var changed = yield this.changePath(libraryID, newPath)
+			checkboxCell.setAttribute("value", changed);
+			if (changed) {
+				pathCell.setAttribute("label", newPath);
+				pathCell.setAttribute("value", newPath);
+			}
 		} else {
-			this.clearPath(libraryID).then(function (cleared) {
-				checkboxCell.setAttribute("value", !cleared);
-				if (cleared) {
-					pathCell.setAttribute("label", "");
-					pathCell.setAttribute("value", "");
-				}
-			});
+			var cleared = yield this.clearPath(libraryID)
+			checkboxCell.setAttribute("value", !cleared);
+			if (cleared) {
+				pathCell.setAttribute("label", "");
+				pathCell.setAttribute("value", "");
+			}
 		}
-	},
+	}),
 
 
 	getNewPath: function (oldPath) {
@@ -669,7 +664,6 @@ Zotero_Preferences.Attachment_Base_Directory = {
 		var newPath = OS.Path.normalize(fp.file.path);
 		
 		if (oldPath && oldPath == newPath) {
-			Zotero.debug("Base directory hasn't changed");
 			return false;
 		}
 		
@@ -677,7 +671,7 @@ Zotero_Preferences.Attachment_Base_Directory = {
 	},
 
 
-	initLibraryAttachmentBasePaths: Zotero.Promise.coroutine(function* () {
+	initLibraryAttachmentBasePaths: function () {
 		var tree = document.getElementById('library-attachment-base-paths-tree');
 		var treechildren = document.getElementById('library-attachment-base-paths-rows');
 		while (treechildren.hasChildNodes()) {
@@ -688,7 +682,7 @@ Zotero_Preferences.Attachment_Base_Directory = {
 		var libraries = Zotero.Libraries.getAll()
 			.filter(l => l.libraryType === "user" || l.libraryType === "group");
 
-		libraries.forEach(function (library) {
+		for (let library of libraries) {
 			var libraryName = library.name;
 			var libraryID = parseInt(library.libraryID);
 			var checked = Zotero.Attachments.getSaveRelativePathByLibrary(libraryID);
@@ -716,7 +710,7 @@ Zotero_Preferences.Attachment_Base_Directory = {
 			treerow.appendChild(pathCell);
 			treeitem.appendChild(treerow);
 			treechildren.appendChild(treeitem);
-		});
+		}
 
 		// Prune preferences of any libraries that no longer exist
 		var existentLibraryIDs = libraries.map(l => parseInt(l.libraryID));
@@ -734,7 +728,7 @@ Zotero_Preferences.Attachment_Base_Directory = {
 				Zotero.Attachments.setBasePathByLibrary(libraryID, null);
 			}
 		});
-	}),
+	},
 
 	
 	changePath: Zotero.Promise.coroutine(function* (libraryID, basePath) {
