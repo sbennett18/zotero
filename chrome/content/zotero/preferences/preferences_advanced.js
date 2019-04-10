@@ -601,7 +601,7 @@ Zotero_Preferences.Attachment_Base_Directory = {
 			return;
 		}
 
-		return this.toggleLibraryAttachmentBasePath(row.value);
+		this.toggleLibraryAttachmentBasePath(row.value);
 	},
 
 
