@@ -37,8 +37,8 @@
 
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	title="" buttons="accept"
-	id="zotero-libraryAttachmentBasePaths"
-	onload="Zotero_Preferences.Attachment_Base_Directory.initLibraryAttachmentBasePaths(); sizeToContent()" >
+	id="zotero-libraryAttachmentBaseDirs"
+	onload="Zotero_Preferences.Attachment_Base_Directory.initLibraryAttachmentBaseDirs(); sizeToContent()" >
 
 	<script src="chrome://zotero/content/include.js"/>
 	<script src="preferences.js"/>
@@ -47,15 +47,15 @@
 	<groupbox>
 		<caption label="Library Attachment Base Directories"/>
 
-		<tree id="library-attachment-base-paths-tree" flex="1" width="515" hidecolumnpicker="true" rows="10" seltype="single" editable="true"
-			ondblclick="Zotero_Preferences.Attachment_Base_Directory.dblClickLibraryAttachmentBasePath(event);"
-            onclick="Zotero_Preferences.Attachment_Base_Directory.clickLibraryAttachmentBasePath(event);">
+		<tree id="library-attachment-base-dirs-tree" flex="1" width="515" hidecolumnpicker="true" rows="10" seltype="single" editable="true"
+			ondblclick="Zotero_Preferences.Attachment_Base_Directory.dblClickLibraryAttachmentBaseDir(event);"
+            onclick="Zotero_Preferences.Attachment_Base_Directory.clickLibraryAttachmentBaseDir(event);">
             <treecols>
-                <treecol editable="true" type="checkbox" id="library-attachment-base-paths-checked" label="Enable"/>
-                <treecol editable="false" id="library-attachment-base-paths-name" flex="1" label="&zotero.preferences.sync.librariesToSync.library;"/>
-                <treecol editable="false" id="library-attachment-base-paths-path" flex="5" label="Base Directory"/>
+                <treecol editable="true" type="checkbox" id="library-attachment-base-dirs-checked" label="Enable"/>
+                <treecol editable="false" id="library-attachment-base-dirs-name" flex="1" label="&zotero.preferences.sync.librariesToSync.library;"/>
+                <treecol editable="false" id="library-attachment-base-dirs-path" flex="5" label="Base Directory"/>
             </treecols>
-			<treechildren id="library-attachment-base-paths-rows"/>
+			<treechildren id="library-attachment-base-dirs-rows"/>
 		</tree>
 	</groupbox>
 

@@ -2084,21 +2084,21 @@ Zotero.Attachments = new function(){
 			return path;
 		}
 
-		var basePath = Zotero.Attachments.getBasePathByLibrary(libraryID);
-		if (!basePath) {
+		var baseDir = Zotero.Attachments.getBaseDirByLibrary(libraryID);
+		if (!baseDir) {
 			return path;
 		}
 
-		if (Zotero.File.directoryContains(basePath, path)) {
+		if (Zotero.File.directoryContains(baseDir, path)) {
 			// Since stored paths can be synced to other platforms, use forward slashes for consistency.
 			// resolveRelativePath() will convert to the appropriate platform-specific slash on use.
-			basePath = basePath.replace(/\\/g, "/");
+			baseDir = baseDir.replace(/\\/g, "/");
 			path = OS.Path.normalize(path).replace(/\\/g, "/");
 			// Normalize D:\ vs. D:\foo
-			if (!basePath.endsWith('/')) {
-				basePath += '/';
+			if (!baseDir.endsWith('/')) {
+				baseDir += '/';
 			}
-			path = this.BASE_PATH_PLACEHOLDER + path.substr(basePath.length)
+			path = this.BASE_PATH_PLACEHOLDER + path.substr(baseDir.length)
 		}
 
 		return path;
@@ -2117,41 +2117,41 @@ Zotero.Attachments = new function(){
 			return false;
 		}
 
-		var basePath = Zotero.Attachments.getBasePathByLibrary(libraryID, path);
-		if (!basePath) {
-			Zotero.debug(`No base attachment path set -- can't resolve '${path}' in library '${libraryID}'`, 2);
+		var baseDir = Zotero.Attachments.getBaseDirByLibrary(libraryID, path);
+		if (!baseDir) {
+			Zotero.debug(`No attachment base directory set -- can't resolve '${path}' in library '${libraryID}'`, 2);
 			return false;
 		}
 
 		return this.fixPathSlashes(OS.Path.join(
-			basePath, path.substr(Zotero.Attachments.BASE_PATH_PLACEHOLDER.length)
+			baseDir, path.substr(Zotero.Attachments.BASE_PATH_PLACEHOLDER.length)
 		));
 	};
 
 
 	/**
-	 * Get the attachment base path for ``libraryID``, if its set
+	 * Get the attachment base directory for ``libraryID``, if its set
 	 *
 	 * @param {Integer} libraryID
-	 * @return {String|false} Normalized attachment base path, or FALSE if no path is found for ``libraryID``
+	 * @return {String|false} Normalized attachment base directory, or FALSE if no path is found for ``libraryID``
 	 */
-	this.getBasePathByLibrary = function (libraryID) {
+	this.getBaseDirByLibrary = function (libraryID) {
 		// Upgrade and clear out the old preference first
 		var prefValue = Zotero.Prefs.get("baseAttachmentPath");
 		if (prefValue) {
-			Zotero.debug(`Upgrading old user library attachment base path preference: '${prefValue}'`);
-			this.setBasePathByLibrary(Zotero.Libraries.userLibraryID, prefValue);
+			Zotero.debug(`Upgrading old user library attachment base directory preference: '${prefValue}'`);
+			this.setBaseDirByLibrary(Zotero.Libraries.userLibraryID, prefValue);
 			Zotero.Prefs.clear("baseAttachmentPath");
 		}
 
-		prefValue = JSON.parse(Zotero.Prefs.get("libraryAttachmentBasePaths") || "{}");
+		prefValue = JSON.parse(Zotero.Prefs.get("libraryAttachmentBaseDirs") || "{}");
 		if (libraryID in prefValue) {
-			var basePath = prefValue[libraryID];
-			if (basePath) {
+			var baseDir = prefValue[libraryID];
+			if (baseDir) {
 				try {
-					basePath = OS.Path.normalize(basePath);
-					Zotero.debug(`Attachment base path found for library '${libraryID}': '${basePath}'`);
-					return basePath;
+					baseDir = OS.Path.normalize(baseDir);
+					Zotero.debug(`Attachment base directory found for library '${libraryID}': '${baseDir}'`);
+					return baseDir;
 				}
 				catch (e) {
 					Zotero.logError(e);
@@ -2159,35 +2159,37 @@ Zotero.Attachments = new function(){
 			}
 		}
 
-		Zotero.debug(`Base path not found for library '${libraryID}'`);
+		Zotero.debug(`Attachment base directory not found for library '${libraryID}'`);
 		return false
 	};
 
 
 	/**
-	 * Set or clear the attachment base path for ``libraryID``
+	 * Set the attachment base directory for ``libraryID``.  ``libraryID``s attachment
+	 * base directory can be cleared by passing a falsy value for ``newBaseDir``.
 	 *
 	 * @param {Integer} libraryID
-	 * @param {String|null} newPath - New attachment base path for ``libraryID`` or clear it if null
+	 * @param {String|false} newBaseDir - New attachment base directory for ``libraryID`` or clear it if falsy
 	 * @return {Boolean}
 	 */
-	this.setBasePathByLibrary = function(libraryID, newBase) {
-		Zotero.debug(`Setting base attachment path for library '${libraryID}': '${newBase}'`);
-		var prefValue = JSON.parse(Zotero.Prefs.get("libraryAttachmentBasePaths") || "{}");
-		if (newBase === null) {
-			delete prefValue[libraryID];
+	this.setBaseDirByLibrary = function(libraryID, newBaseDir) {
+		var prefValue = JSON.parse(Zotero.Prefs.get("libraryAttachmentBaseDirs") || "{}");
+		if (newBaseDir) {
+			Zotero.debug(`Setting attachment base directory for library '${libraryID}': '${newBaseDir}'`);
+			prefValue[libraryID] = newBaseDir;
 		}
 		else {
-			prefValue[libraryID] = newBase;
+			Zotero.debug(`Clearing attachment base directory for library '${libraryID}'`);
+			delete prefValue[libraryID];
 		}
 
-		Zotero.Prefs.set("libraryAttachmentBasePaths", JSON.stringify(prefValue));
+		Zotero.Prefs.set("libraryAttachmentBaseDirs", JSON.stringify(prefValue));
 		return true;
 	};
 
 
 	/**
-	 * Get whether attachments within ``libraryID``'s base attachment directory
+	 * Get whether attachments within ``libraryID``'s attachment base directory
 	 * should be saved as relative paths.
 	 *
 	 * @param {Integer} libraryID
@@ -2215,22 +2217,23 @@ Zotero.Attachments = new function(){
 
 
 	/**
-	 * Set whether attachments within ``libraryID``'s base attachment directory
+	 * Set whether attachments within ``libraryID``'s attachment base directory
 	 * should be saved as relative paths.  ``libraryID`` can be cleared by passing
-	 * null for ``saveRelative``.
+	 * a falsy value for ``saveRelative``.
 	 *
 	 * @param {Integer} libraryID
-	 * @param {String|null} saveRelative - New base attachment path for ``libraryID`` or clear it if null
+	 * @param {String|false} saveRelative - New attachment base directory for ``libraryID`` or clear it if falsy
 	 * @return {Boolean}
 	 */
 	this.setSaveRelativePathByLibrary = function (libraryID, saveRelative) {
-		Zotero.debug(`Setting save relative path for library '${libraryID}': '${saveRelative}'`);
 		var prefValue = JSON.parse(Zotero.Prefs.get("librarySaveRelativeAttachmentPaths") || "{}");
-		if (saveRelative === null) {
-			delete prefValue[libraryID];
+		if (saveRelative) {
+			Zotero.debug(`Setting save relative path for library '${libraryID}': '${saveRelative}'`);
+			prefValue[libraryID] = saveRelative;
 		}
 		else {
-			prefValue[libraryID] = saveRelative;
+			Zotero.debug(`Clearing save relative path for library '${libraryID}'`);
+			delete prefValue[libraryID];
 		}
 
 		Zotero.Prefs.set("librarySaveRelativeAttachmentPaths", JSON.stringify(prefValue));

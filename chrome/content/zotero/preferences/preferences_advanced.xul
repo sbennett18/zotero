@@ -156,9 +156,9 @@
 						</vbox>
 						
 						<hbox align="center">
-							<button id="attachmentBasePathButton"
+							<button id="attachmentBaseDirButton"
 								label="&zotero.preferences.attachmentBaseDir.selectBasePath;"
-								oncommand="Zotero_Preferences.Attachment_Base_Directory.choosePath()"/>
+								oncommand="Zotero_Preferences.Attachment_Base_Directory.manageBaseDirs()"/>
 						</hbox>
 						
 					</groupbox>
