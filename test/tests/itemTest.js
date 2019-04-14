@@ -1642,7 +1642,7 @@ describe("Zotero.Item", function () {
 			
 			assert.isTrue(collection.hasItem(attachment.id));
 			var json = attachment.toJSON();
-			json.path = 'storage:test2.png';
+			json.path = Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + 'test2.png';
 			// Add to parent, which implicitly removes from collection
 			json.parentItem = item.key;
 			delete json.collections;

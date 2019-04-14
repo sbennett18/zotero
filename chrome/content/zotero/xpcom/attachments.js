@@ -30,6 +30,7 @@ Zotero.Attachments = new function () {
 	this.LINK_MODE_LINKED_FILE = 2;
 	this.LINK_MODE_LINKED_URL = 3;
 	this.BASE_PATH_PLACEHOLDER = 'attachments:';
+	this.STORAGE_DIRECTORY_PLACEHOLDER = 'storage:';
 
 	var _findPDFQueue = [];
 	var _findPDFQueuePromise = null;
@@ -297,7 +298,7 @@ Zotero.Attachments = new function () {
 			yield Zotero.DB.executeTransaction(function* () {
 				// Create a new attachment
 				attachmentItem = _createAttachmentItem({
-					file: 'storage:' + fileName,
+					file: Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + fileName,
 					url,
 					// libraryID,
 					title,
@@ -563,7 +564,7 @@ Zotero.Attachments = new function () {
 		var attachmentItem;
 		try {
 			attachmentItem = _createAttachmentItem({
-				file: 'storage:' + filename,
+				file: Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + filename,
 				url,
 				libraryID,
 				title: title !== undefined ? title : filename,
@@ -809,7 +810,7 @@ Zotero.Attachments = new function () {
 			}
 
 			var attachmentItem = _createAttachmentItem({
-				file: 'storage:' + fileName,
+				file: Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + fileName,
 				url,
 				libraryID,
 				title,

@@ -1201,8 +1201,8 @@ Zotero_Import_Mendeley.prototype.deleteNonPrimaryFiles = async function () {
 	);
 	for (let row of rows) {
 		let dir = (Zotero.Attachments.getStorageDirectoryByLibraryAndKey(1, row.key)).path;
-		if (!row.path.startsWith('storage:')) {
-			Zotero.logError(row.path + " does not start with 'storage:'");
+		if (!row.path.startsWith(Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER)) {
+			Zotero.logError(`${row.path} does not start with '${Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER}'`);
 			continue;
 		}
 		let filename = row.path.substr(8);

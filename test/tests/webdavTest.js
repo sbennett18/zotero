@@ -175,7 +175,7 @@ describe("Zotero.Sync.Storage.Mode.WebDAV", function () {
 			
 			var item = new Zotero.Item("attachment");
 			item.attachmentLinkMode = 'imported_file';
-			item.attachmentPath = 'storage:test.txt';
+			item.attachmentPath = Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + 'test.txt';
 			item.attachmentSyncState = "to_download";
 			yield item.saveTx();
 			
@@ -206,7 +206,7 @@ describe("Zotero.Sync.Storage.Mode.WebDAV", function () {
 			
 			var item = new Zotero.Item("attachment");
 			item.attachmentLinkMode = 'imported_file';
-			item.attachmentPath = 'storage:test.txt';
+			item.attachmentPath = Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + 'test.txt';
 			item.attachmentSyncState = "to_download";
 			yield item.saveTx();
 			
@@ -240,7 +240,7 @@ describe("Zotero.Sync.Storage.Mode.WebDAV", function () {
 			
 			var item = new Zotero.Item("attachment");
 			item.attachmentLinkMode = 'imported_file';
-			item.attachmentPath = 'storage:test.txt';
+			item.attachmentPath = Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + 'test.txt';
 			item.attachmentSyncState = "to_download";
 			yield item.saveTx();
 			
@@ -285,7 +285,7 @@ describe("Zotero.Sync.Storage.Mode.WebDAV", function () {
 			var fileName = "test.txt";
 			var item = new Zotero.Item("attachment");
 			item.attachmentLinkMode = 'imported_file';
-			item.attachmentPath = 'storage:' + fileName;
+			item.attachmentPath = Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + fileName;
 			// TODO: Test binary data
 			var text = Zotero.Utilities.randomString();
 			item.attachmentSyncState = "to_download";

@@ -142,7 +142,7 @@ describe("Zotero.Sync.Storage.Mode.ZFS", function () {
 			
 			var item = new Zotero.Item("attachment");
 			item.attachmentLinkMode = 'imported_file';
-			item.attachmentPath = 'storage:test.txt';
+			item.attachmentPath = Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + 'test.txt';
 			item.attachmentSyncState = "to_download";
 			yield item.saveTx();
 			
@@ -176,7 +176,7 @@ describe("Zotero.Sync.Storage.Mode.ZFS", function () {
 			for (let i = 0; i < 5; i++) {
 				let item = new Zotero.Item("attachment");
 				item.attachmentLinkMode = 'imported_file';
-				item.attachmentPath = 'storage:test.txt';
+				item.attachmentPath = Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + 'test.txt';
 				item.attachmentSyncState = "to_download";
 				yield item.saveTx();
 				items.push(item);
@@ -208,7 +208,7 @@ describe("Zotero.Sync.Storage.Mode.ZFS", function () {
 			
 			var item = new Zotero.Item("attachment");
 			item.attachmentLinkMode = 'imported_file';
-			item.attachmentPath = 'storage:test.txt';
+			item.attachmentPath = Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + 'test.txt';
 			item.attachmentSyncState = "to_download";
 			yield item.saveTx();
 			
@@ -239,7 +239,7 @@ describe("Zotero.Sync.Storage.Mode.ZFS", function () {
 			
 			var item = new Zotero.Item("attachment");
 			item.attachmentLinkMode = 'imported_file';
-			item.attachmentPath = 'storage:test.txt';
+			item.attachmentPath = Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + 'test.txt';
 			// TODO: Test binary data
 			var text = Zotero.Utilities.randomString();
 			item.attachmentSyncState = "to_download";

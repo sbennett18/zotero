@@ -2193,7 +2193,7 @@ Zotero.Item.prototype.getFilePath = function () {
 	// Imported file with relative path
 	if (linkMode == Zotero.Attachments.LINK_MODE_IMPORTED_URL ||
 			linkMode == Zotero.Attachments.LINK_MODE_IMPORTED_FILE) {
-		if (!path.includes("storage:")) {
+		if (!path.includes(Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER)) {
 			Zotero.logError("Invalid attachment path '" + path + "'");
 			this._updateAttachmentStates(false);
 			return false;
@@ -2287,7 +2287,7 @@ Zotero.Item.prototype.getFilePathAsync = Zotero.Promise.coroutine(function* () {
 	// Imported file with relative path
 	if (linkMode == Zotero.Attachments.LINK_MODE_IMPORTED_URL ||
 			linkMode == Zotero.Attachments.LINK_MODE_IMPORTED_FILE) {
-		if (!path.includes("storage:")) {
+		if (!path.includes(Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER)) {
 			Zotero.logError("Invalid attachment path '" + path + "'");
 			this._updateAttachmentStates(false);
 			return false;
@@ -2851,7 +2851,7 @@ Zotero.defineProperty(Zotero.Item.prototype, 'attachmentFilename', {
 			throw new Error("Attachment filename cannot be blank");
 		}
 		
-		this.attachmentPath = 'storage:' + val;
+		this.attachmentPath = Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + val;
 	}
 });
 
@@ -2909,12 +2909,12 @@ Zotero.defineProperty(Zotero.Item.prototype, 'attachmentPath', {
 		}
 		else if (linkMode == Zotero.Attachments.LINK_MODE_IMPORTED_URL ||
 				linkMode == Zotero.Attachments.LINK_MODE_IMPORTED_FILE) {
-			if (!val.startsWith('storage:')) {
+			if (!val.startsWith(Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER)) {
 				let storagePath = Zotero.Attachments.getStorageDirectory(this).path;
 				if (!val.startsWith(storagePath)) {
 					throw new Error("Imported file path must be within storage directory");
 				}
-				val = 'storage:' + OS.Path.basename(val);
+				val = Zotero.Attachments.STORAGE_DIRECTORY_PLACEHOLDER + OS.Path.basename(val);
 			}
 		}
 		
